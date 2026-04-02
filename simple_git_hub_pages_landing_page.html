@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Site</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #1e293b;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.8em;
+      font-weight: bold;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    a.card {
+      display: block;
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #e2e8f0;
+      transition: 0.2s ease;
+      border: 1px solid #334155;
+    }
+    a.card:hover {
+      background: #334155;
+      transform: translateY(-3px);
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9em;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    My Landing Page
+  </header>
+
+  <div class="container">
+    <p>Select a page:</p>
+    <div class="grid" id="linkGrid">
+      <!-- Links will be inserted here -->
+    </div>
+  </div>
+
+  <footer>
+    Hosted on GitHub Pages
+  </footer>
+
+  <script>
+    // === CONFIGURE YOUR PAGES HERE ===
+    const pages = [
+      { name: "Meal Planner v4", file: "meal_planner_v4.html" },
+      { name: "Beef Potato Bake", file: "beef_potato_bake.html" },
+	  { name: "Garlic Herb Chicken", file: "garlic_herb_chicken.html" },
+	  { name: "Meal Planner", file: "meal_planner.html" },
+      { name: "Burger or Pizza", file: "burger_pizza.html" }
+    ];
+
+    const grid = document.getElementById("linkGrid");
+
+    pages.forEach(page => {
+      const link = document.createElement("a");
+      link.href = page.file;
+      link.className = "card";
+      link.textContent = page.name;
+      grid.appendChild(link);
+    });
+  </script>
+</body>
+</html>

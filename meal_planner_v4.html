@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7-Day Meal Plan v4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FAF8F4;
+    --parchment: #F2EDE4;
+    --warm-gray: #8C8179;
+    --mid-gray: #C5BFB8;
+    --dark: #1E1A17;
+    --text: #2E2925;
+    --muted: #6B6460;
+    --green: #3A7D5E;
+    --amber: #C07A2A;
+    --rose: #A8506A;
+    --blue: #2E6EA6;
+    --red: #B84040;
+    --border: rgba(0,0,0,0.07);
+    --border-strong: rgba(0,0,0,0.12);
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  .page { max-width: 740px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+  .page-header { margin-bottom: 1.75rem; padding-bottom: 1.5rem; border-bottom: 1.5px solid var(--border-strong); }
+
+  .page-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--blue); margin-bottom: 10px;
+  }
+  .page-badge::before { content: ''; width: 20px; height: 1.5px; background: var(--blue); display: block; }
+
+  h1 { font-family: 'Lora', serif; font-size: 1.9rem; font-weight: 600; color: var(--dark); margin-bottom: 6px; }
+  .page-sub { font-size: 13.5px; color: var(--muted); }
+
+  .weekly-summary {
+    background: white; border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px 18px; margin-bottom: 1.25rem;
+    display: flex; gap: 20px; flex-wrap: wrap; align-items: center;
+  }
+  .weekly-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--mid-gray); flex-shrink: 0; }
+  .weekly-stats { display: flex; gap: 18px; flex-wrap: wrap; flex: 1; }
+  .w-stat { display: flex; flex-direction: column; gap: 1px; }
+  .w-val { font-size: 17px; font-weight: 600; color: var(--dark); }
+  .w-sub { font-size: 10px; color: var(--warm-gray); text-transform: uppercase; letter-spacing: 0.05em; }
+  .weekly-note { font-size: 12px; color: var(--mid-gray); font-style: italic; margin-left: auto; }
+
+  .macro-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+  .macro-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 12px; position: relative; overflow: hidden; }
+  .macro-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; border-radius: 0 0 var(--radius) var(--radius); }
+  .macro-card.cal::after    { background: var(--blue); }
+  .macro-card.protein::after{ background: var(--green); }
+  .macro-card.carbs::after  { background: var(--amber); }
+  .macro-card.fat::after    { background: var(--rose); }
+  .macro-lbl { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--warm-gray); margin-bottom: 3px; }
+  .macro-val { font-size: 20px; font-weight: 600; color: var(--dark); line-height: 1; }
+  .macro-val.over { color: var(--red); }
+  .macro-unit { font-size: 11px; font-weight: 400; color: var(--warm-gray); }
+  .macro-target { font-size: 10px; color: var(--mid-gray); margin-top: 3px; }
+  .prog-track { height: 3px; background: var(--parchment); border-radius: 2px; margin-top: 8px; }
+  .prog-fill { height: 3px; border-radius: 2px; transition: width 0.35s ease; }
+
+  .day-tabs { display: flex; gap: 6px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .day-tab {
+    padding: 7px 14px; border-radius: 50px; border: 1px solid var(--border-strong);
+    font-size: 13px; font-weight: 500; cursor: pointer; background: white; color: var(--muted);
+    transition: all 0.15s; display: flex; align-items: center; gap: 5px;
+  }
+  .day-tab:hover { border-color: var(--dark); color: var(--dark); }
+  .day-tab.active { background: var(--dark); color: white; border-color: var(--dark); }
+  .tab-cal { font-size: 10px; opacity: 0.65; font-weight: 400; }
+  .day-tab.over-cal .tab-cal { color: #FF7070; opacity: 1; }
+
+  .meals-list { display: flex; flex-direction: column; gap: 10px; }
+  .meal-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .meal-header { display: flex; align-items: center; padding: 13px 16px; cursor: pointer; user-select: none; gap: 10px; transition: background 0.1s; }
+  .meal-header:hover { background: var(--cream); }
+  .meal-left { flex: 1; min-width: 0; }
+  .meal-name { font-size: 14px; font-weight: 600; color: var(--dark); }
+  .meal-macros { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+  .meal-macro-tag { font-size: 12px; color: var(--warm-gray); font-weight: 500; }
+  .meal-cal { font-size: 14px; font-weight: 600; color: var(--dark); }
+  .meal-sep { font-size: 11px; color: var(--mid-gray); }
+
+  .chevron { width: 22px; height: 22px; border-radius: 50%; background: var(--parchment); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--warm-gray); transition: transform 0.2s; flex-shrink: 0; border: none; cursor: pointer; }
+  .chevron.open { transform: rotate(180deg); }
+
+  .meal-body { border-top: 1px solid var(--border); padding: 0 16px 14px; }
+
+  .food-hdr, .food-row {
+    display: grid; grid-template-columns: 1fr 52px 44px 44px 44px;
+    gap: 4px; padding: 7px 0; border-bottom: 1px solid var(--border);
+    align-items: center; font-size: 12.5px;
+  }
+  .food-row:last-child { border-bottom: none; }
+  .food-hdr { padding: 10px 0 6px; }
+  .hdr-c { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--mid-gray); text-align: right; }
+  .hdr-c:first-child { text-align: left; }
+  .food-name { color: var(--text); }
+  .food-qty { font-size: 11px; color: var(--mid-gray); }
+  .num { text-align: right; color: var(--warm-gray); font-size: 12px; }
+
+  .new-badge {
+    display: inline-block; font-size: 9px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    background: #EBF4FF; color: var(--blue); border: 1px solid #BDD8F5;
+    padding: 1px 5px; border-radius: 4px; margin-left: 5px; vertical-align: middle;
+  }
+
+  @media (max-width: 560px) {
+    .macro-grid { grid-template-columns: repeat(2, 1fr); }
+    h1 { font-size: 1.5rem; }
+    .weekly-summary { flex-direction: column; gap: 12px; }
+    .weekly-note { margin-left: 0; }
+    .meal-macros { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-header">
+    <div class="page-badge">Weekly Meal Plan v4</div>
+    <h1>7-Day Nutrition Plan</h1>
+    <p class="page-sub">2,196 kcal · 151g protein · 232g carbs · 73g fat — daily targets</p>
+  </div>
+
+  <div class="weekly-summary" id="weeklySummary"></div>
+
+  <div class="macro-grid">
+    <div class="macro-card cal"><div class="macro-lbl">Calories</div><div class="macro-val" id="mc-cal">—<span class="macro-unit"> kcal</span></div><div class="macro-target">target 2196</div><div class="prog-track"><div class="prog-fill" id="mp-cal" style="background:var(--blue)"></div></div></div>
+    <div class="macro-card protein"><div class="macro-lbl">Protein</div><div class="macro-val" id="mc-p">—<span class="macro-unit"> g</span></div><div class="macro-target">target 151g</div><div class="prog-track"><div class="prog-fill" id="mp-p" style="background:var(--green)"></div></div></div>
+    <div class="macro-card carbs"><div class="macro-lbl">Carbs</div><div class="macro-val" id="mc-c">—<span class="macro-unit"> g</span></div><div class="macro-target">target 232g</div><div class="prog-track"><div class="prog-fill" id="mp-c" style="background:var(--amber)"></div></div></div>
+    <div class="macro-card fat"><div class="macro-lbl">Fat</div><div class="macro-val" id="mc-f">—<span class="macro-unit"> g</span></div><div class="macro-target">target 73g</div><div class="prog-track"><div class="prog-fill" id="mp-f" style="background:var(--rose)"></div></div></div>
+  </div>
+
+  <div class="day-tabs" id="dayTabs"></div>
+  <div class="meals-list" id="mealsList"></div>
+
+</div>
+
+<script>
+const TARGETS = { cal: 2196, p: 151, f: 73, c: 232 };
+
+const DAYS = [
+  { label: 'Day 1', meals: [
+    { name: 'Breakfast', foods: [
+      { n: 'Wheatbix Yogurt Cereal', q: '220g', cal: 357, p: 39, c: 32, f: 6 },
+      { n: 'Banana', q: '1 medium (118g)', cal: 89, p: 1, c: 23, f: 0, isNew: true },
+    ]},
+    { name: 'Lunch', foods: [
+      { n: 'Extra Lean Beef Mince', q: '120g', cal: 215, p: 35, c: 3, f: 9 },
+      { n: 'Long Grain White Rice', q: '95g dry', cal: 338, p: 7, c: 74, f: 2 },
+      { n: 'Mixed Veg (peas/corn/carrots)', q: '100g', cal: 53, p: 2, c: 12, f: 1 },
+    ]},
+    { name: 'Snack', foods: [
+      { n: 'Vanilla Yoghurt', q: '100g', cal: 77, p: 13, c: 5, f: 1 },
+      { n: 'Thin Rice Cakes', q: '1 serve (28g)', cal: 114, p: 3, c: 20, f: 2 },
+    ]},
+    { name: 'Dinner', foods: [
+      { n: 'Chicken Breast Fillets', q: '145g', cal: 260, p: 32, c: 0, f: 15 },
+      { n: '25% Less Carbs Potatoes', q: '165g', cal: 164, p: 5, c: 29, f: 0 },
+      { n: 'Mixed Veg (peas/corn/carrots)', q: '100g', cal: 53, p: 2, c: 12, f: 1 },
+      { n: 'Tasty Grated Cheese', q: '12g', cal: 58, p: 7, c: 0, f: 3 },
+    ]},
+    { name: 'Dessert', foods: [
+      { n: 'No Bake Cheesecake', q: '1 serve', cal: 148, p: 10, c: 11, f: 9 },
+      { n: 'Baking Dark Chocolate 70%', q: '18g', cal: 99, p: 2, c: 7, f: 8 },
+      { n: 'Digestive Wheat Biscuits', q: '1 biscuit', cal: 60, p: 1, c: 8, f: 3 },
+    ]},
+  ]},
+  { label: 'Day 2', meals: [
+    { name: 'Breakfast', foods: [
+      { n: 'Mornington Peninsula Free Range Eggs', q: '2 eggs (120g)', cal: 122, p: 10, c: 1, f: 9 },
+      { n: 'Rustic White Bread', q: '2 slices (84g)', cal: 204, p: 8, c: 42, f: 2, isNew: true },
+      { n: "D'Orsogna Maple Streaky Bacon", q: '2 rashers (50g)', cal: 122, p: 6, c: 2, f: 11 },
+    ]},
+    { name: 'Lunch', foods: [
+      { n: 'Turkey Breast Mince', q: '130g', cal: 186, p: 38, c: 2, f: 3 },
+      { n: '25% Less Carbs Potatoes', q: '170g', cal: 169, p: 5, c: 30, f: 0 },
+      { n: 'Mushrooms, Raw', q: '90g', cal: 26, p: 3, c: 4, f: 0 },
+      { n: 'Tasty Grated Cheese', q: '18g', cal: 87, p: 10, c: 0, f: 5 },
+    ]},
+    { name: 'Snack', foods: [
+      { n: 'Tuna Oil - Italian Style', q: '1 can (95g)', cal: 135, p: 18, c: 1, f: 7 },
+      { n: 'Corn Thins Multigrain', q: '5 pieces (25g)', cal: 110, p: 3, c: 23, f: 1, isNew: true },
+    ]},
+    { name: 'Dinner', foods: [
+      { n: 'Chicken Breast Fillets', q: '140g', cal: 251, p: 31, c: 0, f: 14 },
+      { n: 'Long Grain White Rice', q: '88g dry', cal: 313, p: 7, c: 68, f: 2 },
+      { n: 'Corn Kernels', q: '85g', cal: 47, p: 2, c: 6, f: 1 },
+    ]},
+    { name: 'Dessert', foods: [
+      { n: 'Baking Dark Chocolate 70%', q: '20g', cal: 110, p: 2, c: 7, f: 9 },
+      { n: 'Vanilla Yoghurt', q: '80g', cal: 62, p: 10, c: 4, f: 1 },
+      { n: 'Digestive Wheat Biscuits', q: '2 biscuits', cal: 120, p: 2, c: 17, f: 5 },
+    ]},
+  ]},
+  { label: 'Day 3', meals: [
+    { name: 'Breakfast', foods: [
+      { n: 'Wheatbix Yogurt Cereal', q: '220g', cal: 357, p: 39, c: 32, f: 6 },
+      { n: 'Greek Yogurt Strawberry Shortcake', q: '120g', cal: 137, p: 9, c: 17, f: 4 },
+    ]},
+    { name: 'Lunch', foods: [
+      { n: 'Extra Lean Beef Mince', q: '120g', cal: 215, p: 35, c: 3, f: 9 },
+      { n: 'White Wraps', q: '2 wraps (84g)', cal: 285, p: 23, c: 33, f: 11 },
+      { n: 'Lettuce, Iceberg', q: '40g', cal: 8, p: 0, c: 2, f: 0 },
+      { n: 'Tasty Grated Cheese', q: '12g', cal: 58, p: 7, c: 0, f: 3 },
+    ]},
+    { name: 'Snack', foods: [
+      { n: 'Tuna Oil - Italian Style', q: '1 can (95g)', cal: 135, p: 18, c: 1, f: 7 },
+      { n: 'Corn Thins Multigrain', q: '5 pieces (25g)', cal: 110, p: 3, c: 23, f: 1, isNew: true },
+    ]},
+    { name: 'Dinner', foods: [
+      { n: '5% Fat Extra Lean Pork Mince', q: '120g', cal: 166, p: 27, c: 2, f: 7 },
+      { n: '25% Less Carbs Potatoes', q: '185g', cal: 184, p: 6, c: 32, f: 0 },
+      { n: 'Brown Onion', q: '80g', cal: 38, p: 2, c: 10, f: 0 },
+      { n: 'Mushrooms, Raw', q: '90g', cal: 26, p: 3, c: 4, f: 0 },
+    ]},
+    { name: 'Dessert', foods: [
+      { n: 'No Bake Cheesecake', q: '1 serve', cal: 148, p: 10, c: 11, f: 9 },
+      { n: 'Baking Dark Chocolate 70%', q: '22g', cal: 121, p: 3, c: 8, f: 9 },
+      { n: 'Digestive Wheat Biscuits', q: '1 biscuit', cal: 60, p: 1, c: 8, f: 3 },
+    ]},
+  ]},
+  { label: 'Day 4', meals: [
+    { name: 'Breakfast', foods: [
+      { n: 'Wheatbix Yogurt Cereal', q: '220g', cal: 357, p: 39, c: 32, f: 6 },
+      { n: 'Banana', q: '1 medium (118g)', cal: 89, p: 1, c: 23, f: 0, isNew: true },
+    ]},
+    { name: 'Lunch', foods: [
+      { n: 'Mini Teriyaki Chicken Kebabs', q: '1 serve (235g)', cal: 236, p: 32, c: 11, f: 7 },
+      { n: 'Long Grain White Rice', q: '95g dry', cal: 338, p: 7, c: 74, f: 2 },
+      { n: 'Mixed Veg (peas/corn/carrots)', q: '100g', cal: 53, p: 2, c: 12, f: 1 },
+    ]},
+    { name: 'Snack', foods: [
+      { n: 'Vanilla Yoghurt', q: '100g', cal: 77, p: 13, c: 5, f: 1 },
+      { n: 'Thin Rice Cakes', q: '1 serve (28g)', cal: 114, p: 3, c: 20, f: 2 },
+    ]},
+    { name: 'Dinner', foods: [
+      { n: 'Turkey Breast Mince', q: '120g', cal: 172, p: 35, c: 2, f: 3 },
+      { n: '25% Less Carbs Potatoes', q: '165g', cal: 164, p: 5, c: 29, f: 0 },
+      { n: 'Corn Kernels', q: '85g', cal: 47, p: 2, c: 6, f: 1 },
+      { n: 'Brown Onion', q: '80g', cal: 38, p: 2, c: 10, f: 0 },
+    ]},
+    { name: 'Dessert', foods: [
+      { n: 'Baking Dark Chocolate 70%', q: '22g', cal: 121, p: 3, c: 8, f: 9 },
+      { n: 'Digestive Wheat Biscuits', q: '2 biscuits', cal: 120, p: 2, c: 17, f: 5 },
+      { n: 'Vanilla Yoghurt', q: '60g', cal: 46, p: 8, c: 3, f: 1 },
+    ]},
+  ]},
+  { label: 'Day 5', meals: [
+    { name: 'Breakfast', foods: [
+      { n: 'Mornington Peninsula Free Range Eggs', q: '2 eggs (120g)', cal: 122, p: 10, c: 1, f: 9 },
+      { n: 'Rustic White Bread', q: '2 slices (84g)', cal: 204, p: 8, c: 42, f: 2, isNew: true },
+      { n: "D'Orsogna Maple Streaky Bacon", q: '2 rashers (50g)', cal: 122, p: 6, c: 2, f: 11 },
+    ]},
+    { name: 'Lunch', foods: [
+      { n: 'Extra Lean Beef Mince', q: '125g', cal: 224, p: 37, c: 3, f: 9 },
+      { n: 'Long Grain White Rice', q: '90g dry', cal: 320, p: 7, c: 70, f: 2 },
+      { n: 'Mixed Veg (peas/corn/carrots)', q: '100g', cal: 53, p: 2, c: 12, f: 1 },
+    ]},
+    { name: 'Snack', foods: [
+      { n: 'Tuna Oil - Italian Style', q: '1 can (95g)', cal: 135, p: 18, c: 1, f: 7 },
+      { n: 'Thin Rice Cakes', q: '1 serve (28g)', cal: 114, p: 3, c: 20, f: 2 },
+    ]},
+    { name: 'Dinner', foods: [
+      { n: 'Chicken Breast Fillets', q: '140g', cal: 251, p: 31, c: 0, f: 14 },
+      { n: '25% Less Carbs Potatoes', q: '170g', cal: 169, p: 5, c: 30, f: 0 },
+      { n: 'Mushrooms, Raw', q: '90g', cal: 26, p: 3, c: 4, f: 0 },
+      { n: 'Natural Cheddar Cheese Slices', q: '1 slice (25g)', cal: 94, p: 12, c: 0, f: 5 },
+    ]},
+    { name: 'Dessert', foods: [
+      { n: 'No Bake Cheesecake', q: '1 serve', cal: 148, p: 10, c: 11, f: 9 },
+      { n: 'Baking Dark Chocolate 70%', q: '20g', cal: 110, p: 2, c: 7, f: 9 },
+    ]},
+  ]},
+  { label: 'Day 6', meals: [
+    { name: 'Breakfast', foods: [
+      { n: 'Wheatbix Yogurt Cereal', q: '220g', cal: 357, p: 39, c: 32, f: 6 },
+      { n: 'Greek Yogurt Strawberry Shortcake', q: '120g', cal: 137, p: 9, c: 17, f: 4 },
+    ]},
+    { name: 'Lunch', foods: [
+      { n: 'Turkey Breast Mince', q: '130g', cal: 186, p: 38, c: 2, f: 3 },
+      { n: 'White Wraps', q: '2 wraps (84g)', cal: 285, p: 23, c: 33, f: 11 },
+      { n: 'Mushrooms, Raw', q: '90g', cal: 26, p: 3, c: 4, f: 0 },
+      { n: 'Lettuce, Iceberg', q: '40g', cal: 8, p: 0, c: 2, f: 0 },
+      { n: 'Tasty Grated Cheese', q: '12g', cal: 58, p: 7, c: 0, f: 3 },
+    ]},
+    { name: 'Snack', foods: [
+      { n: 'Vanilla Yoghurt', q: '100g', cal: 77, p: 13, c: 5, f: 1 },
+      { n: 'Corn Thins Multigrain', q: '5 pieces (25g)', cal: 110, p: 3, c: 23, f: 1, isNew: true },
+    ]},
+    { name: 'Dinner', foods: [
+      { n: '5% Fat Extra Lean Pork Mince', q: '120g', cal: 166, p: 27, c: 2, f: 7 },
+      { n: 'Long Grain White Rice', q: '88g dry', cal: 313, p: 7, c: 68, f: 2 },
+      { n: 'Brown Onion', q: '80g', cal: 38, p: 2, c: 10, f: 0 },
+      { n: 'Corn Kernels', q: '85g', cal: 47, p: 2, c: 6, f: 1 },
+    ]},
+    { name: 'Dessert', foods: [
+      { n: 'Baking Dark Chocolate 70%', q: '20g', cal: 110, p: 2, c: 7, f: 9 },
+      { n: 'Digestive Wheat Biscuits', q: '2 biscuits', cal: 120, p: 2, c: 17, f: 5 },
+      { n: 'Vanilla Yoghurt', q: '60g', cal: 46, p: 8, c: 3, f: 1 },
+    ]},
+  ]},
+  { label: 'Day 7', meals: [
+    { name: 'Breakfast', foods: [
+      { n: 'Wheatbix Yogurt Cereal', q: '220g', cal: 357, p: 39, c: 32, f: 6 },
+      { n: 'Greek Yogurt Strawberry Shortcake', q: '120g', cal: 137, p: 9, c: 17, f: 4 },
+    ]},
+    { name: 'Lunch', foods: [
+      { n: 'Extra Lean Beef Mince', q: '120g', cal: 215, p: 35, c: 3, f: 9 },
+      { n: '25% Less Carbs Potatoes', q: '185g', cal: 184, p: 6, c: 32, f: 0 },
+      { n: 'Corn Kernels', q: '85g', cal: 47, p: 2, c: 6, f: 1 },
+      { n: 'Brown Onion', q: '80g', cal: 38, p: 2, c: 10, f: 0 },
+    ]},
+    { name: 'Snack', foods: [
+      { n: 'Tuna Oil - Italian Style', q: '1 can (95g)', cal: 135, p: 18, c: 1, f: 7 },
+      { n: 'Thin Rice Cakes', q: '1 serve (28g)', cal: 114, p: 3, c: 20, f: 2 },
+    ]},
+    { name: 'Dinner', foods: [
+      { n: 'Chicken Breast Fillets', q: '145g', cal: 260, p: 32, c: 0, f: 15 },
+      { n: 'Long Grain White Rice', q: '88g dry', cal: 313, p: 7, c: 68, f: 2 },
+      { n: 'Mixed Veg (peas/corn/carrots)', q: '100g', cal: 53, p: 2, c: 12, f: 1 },
+      { n: 'Natural Cheddar Cheese Slices', q: '1 slice (25g)', cal: 94, p: 12, c: 0, f: 5 },
+    ]},
+    { name: 'Dessert', foods: [
+      { n: 'No Bake Cheesecake', q: '1 serve', cal: 148, p: 10, c: 11, f: 9 },
+      { n: 'Baking Dark Chocolate 70%', q: '20g', cal: 110, p: 2, c: 7, f: 9 },
+      { n: 'Digestive Wheat Biscuits', q: '1 biscuit', cal: 60, p: 1, c: 8, f: 3 },
+    ]},
+  ]},
+];
+
+const rd = n => Math.round(n);
+let currentDay = 0;
+const openMeals = {};
+
+function calcDay(day) {
+  let t = {cal:0,p:0,c:0,f:0};
+  day.meals.forEach(m => m.foods.forEach(f => { t.cal+=f.cal; t.p+=f.p; t.c+=f.c; t.f+=f.f; }));
+  return t;
+}
+
+function pct(val, target) { return Math.min(100, rd(val/target*100)); }
+
+function renderWeekly() {
+  const tots = DAYS.map(calcDay);
+  const wCal = tots.reduce((a,b)=>a+b.cal,0);
+  const wP   = tots.reduce((a,b)=>a+b.p,0);
+  const wC   = tots.reduce((a,b)=>a+b.c,0);
+  const wF   = tots.reduce((a,b)=>a+b.f,0);
+  const diff = TARGETS.cal - rd(wCal/7);
+  const note = diff > 0 ? `${Math.abs(diff)} kcal under daily target` : diff < 0 ? `${Math.abs(diff)} kcal over daily target` : 'Exactly on target';
+  document.getElementById('weeklySummary').innerHTML = `
+    <span class="weekly-label">Weekly avg</span>
+    <div class="weekly-stats">
+      <div class="w-stat"><span class="w-val">${rd(wCal/7)}</span><span class="w-sub">kcal / day</span></div>
+      <div class="w-stat"><span class="w-val" style="color:var(--green)">${rd(wP/7)}g</span><span class="w-sub">protein</span></div>
+      <div class="w-stat"><span class="w-val" style="color:var(--amber)">${rd(wC/7)}g</span><span class="w-sub">carbs</span></div>
+      <div class="w-stat"><span class="w-val" style="color:var(--rose)">${rd(wF/7)}g</span><span class="w-sub">fat</span></div>
+    </div>
+    <span class="weekly-note">${note}</span>`;
+}
+
+function renderMacroBar(tot) {
+  const items = [
+    {id:'cal', val:tot.cal, target:TARGETS.cal, unit:'kcal', color:'var(--blue)'},
+    {id:'p',   val:tot.p,   target:TARGETS.p,   unit:'g',    color:'var(--green)'},
+    {id:'c',   val:tot.c,   target:TARGETS.c,   unit:'g',    color:'var(--amber)'},
+    {id:'f',   val:tot.f,   target:TARGETS.f,   unit:'g',    color:'var(--rose)'},
+  ];
+  items.forEach(item => {
+    const over = item.val > item.target;
+    const el = document.getElementById('mc-'+item.id);
+    el.innerHTML = rd(item.val) + `<span class="macro-unit"> ${item.unit}</span>`;
+    el.className = 'macro-val' + (over ? ' over' : '');
+    document.getElementById('mp-'+item.id).style.width = pct(item.val, item.target) + '%';
+    document.getElementById('mp-'+item.id).style.background = over ? 'var(--red)' : item.color;
+  });
+}
+
+function renderTabs() {
+  document.getElementById('dayTabs').innerHTML = DAYS.map((d, i) => {
+    const tot = calcDay(d);
+    return `<button class="day-tab ${i===currentDay?'active':''} ${tot.cal>TARGETS.cal?'over-cal':''}" onclick="switchDay(${i})">
+      ${d.label} <span class="tab-cal">${rd(tot.cal)}</span>
+    </button>`;
+  }).join('');
+}
+
+function renderMeals() {
+  const day = DAYS[currentDay];
+  document.getElementById('mealsList').innerHTML = day.meals.map((m, mi) => {
+    const key = `${currentDay}-${mi}`;
+    const isOpen = openMeals[key] !== false;
+    let mTot = {cal:0,p:0,c:0,f:0};
+    m.foods.forEach(f => { mTot.cal+=f.cal; mTot.p+=f.p; mTot.c+=f.c; mTot.f+=f.f; });
+
+    return `<div class="meal-card">
+      <div class="meal-header" onclick="toggleMeal('${key}')">
+        <div class="meal-left"><div class="meal-name">${m.name}</div></div>
+        <div class="meal-macros">
+          <span class="meal-cal">${rd(mTot.cal)}</span>
+          <span class="meal-sep">·</span>
+          <span class="meal-macro-tag" style="color:var(--green)">${rd(mTot.p)}g P</span>
+          <span class="meal-macro-tag" style="color:var(--amber)">${rd(mTot.c)}g C</span>
+          <span class="meal-macro-tag" style="color:var(--rose)">${rd(mTot.f)}g F</span>
+        </div>
+        <button class="chevron ${isOpen?'open':''}">▾</button>
+      </div>
+      ${isOpen ? `<div class="meal-body">
+        <div class="food-hdr">
+          <span class="hdr-c">Food</span>
+          <span class="hdr-c">kcal</span><span class="hdr-c">P</span><span class="hdr-c">C</span><span class="hdr-c">F</span>
+        </div>
+        ${m.foods.map(food => `<div class="food-row">
+          <span class="food-name">${food.n}${food.isNew ? '<span class="new-badge">new</span>' : ''}<br><span class="food-qty">${food.q}</span></span>
+          <span class="num">${food.cal}</span>
+          <span class="num">${food.p}g</span>
+          <span class="num">${food.c}g</span>
+          <span class="num">${food.f}g</span>
+        </div>`).join('')}
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function switchDay(i) {
+  currentDay = i;
+  renderMacroBar(calcDay(DAYS[i]));
+  renderTabs();
+  renderMeals();
+}
+
+function toggleMeal(key) {
+  openMeals[key] = openMeals[key] === false ? true : false;
+  renderMeals();
+}
+
+renderWeekly();
+switchDay(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7-Day Meal Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FAF8F4;
+    --parchment: #F2EDE4;
+    --warm-gray: #8C8179;
+    --mid-gray: #C5BFB8;
+    --dark: #1E1A17;
+    --text: #2E2925;
+    --muted: #6B6460;
+    --green: #3A7D5E;
+    --amber: #C07A2A;
+    --rose: #A8506A;
+    --blue: #2E6EA6;
+    --red: #B84040;
+    --border: rgba(0,0,0,0.07);
+    --border-strong: rgba(0,0,0,0.12);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  .page {
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  /* Page Header */
+  .page-header {
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1.5px solid var(--border-strong);
+  }
+
+  .page-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 10px;
+  }
+
+  .page-badge::before {
+    content: '';
+    width: 20px; height: 1.5px;
+    background: var(--amber);
+    display: block;
+  }
+
+  h1 {
+    font-family: 'Lora', serif;
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+
+  .page-sub {
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+
+  /* Weekly summary */
+  .weekly-summary {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 1.25rem;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .weekly-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--mid-gray);
+    flex-shrink: 0;
+  }
+
+  .weekly-stats {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+
+  .w-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .w-val {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--dark);
+  }
+
+  .w-sub {
+    font-size: 10px;
+    color: var(--warm-gray);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .weekly-note {
+    font-size: 12px;
+    color: var(--mid-gray);
+    font-style: italic;
+    margin-left: auto;
+  }
+
+  /* Macro bar */
+  .macro-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+
+  .macro-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 13px 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .macro-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+
+  .macro-card.cal::after    { background: var(--blue); }
+  .macro-card.protein::after{ background: var(--green); }
+  .macro-card.carbs::after  { background: var(--amber); }
+  .macro-card.fat::after    { background: var(--rose); }
+
+  .macro-lbl {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--warm-gray);
+    margin-bottom: 3px;
+  }
+
+  .macro-val {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--dark);
+    line-height: 1;
+  }
+
+  .macro-val.over { color: var(--red); }
+  .macro-unit { font-size: 11px; font-weight: 400; color: var(--warm-gray); }
+  .macro-target { font-size: 10px; color: var(--mid-gray); margin-top: 3px; }
+
+  .prog-track {
+    height: 3px;
+    background: var(--parchment);
+    border-radius: 2px;
+    margin-top: 8px;
+  }
+
+  .prog-fill {
+    height: 3px;
+    border-radius: 2px;
+    transition: width 0.35s ease;
+  }
+
+  /* Day tabs */
+  .day-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .day-tab {
+    padding: 7px 14px;
+    border-radius: 50px;
+    border: 1px solid var(--border-strong);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    background: white;
+    color: var(--muted);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .day-tab:hover { border-color: var(--dark); color: var(--dark); }
+
+  .day-tab.active {
+    background: var(--dark);
+    color: white;
+    border-color: var(--dark);
+  }
+
+  .day-tab .tab-cal {
+    font-size: 10px;
+    opacity: 0.65;
+    font-weight: 400;
+  }
+
+  .day-tab.over-cal .tab-cal { color: #FF7070; opacity: 1; }
+
+  /* Meal list */
+  .meals-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .meal-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .meal-header {
+    display: flex;
+    align-items: center;
+    padding: 13px 16px;
+    cursor: pointer;
+    user-select: none;
+    gap: 10px;
+    transition: background 0.1s;
+  }
+
+  .meal-header:hover { background: var(--cream); }
+
+  .meal-left { flex: 1; min-width: 0; }
+
+  .meal-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark);
+    line-height: 1.2;
+  }
+
+  .meal-dish {
+    font-size: 12px;
+    color: var(--warm-gray);
+    font-style: italic;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .meal-macros {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    align-items: center;
+  }
+
+  .meal-macro-tag {
+    font-size: 12px;
+    color: var(--warm-gray);
+    font-weight: 500;
+  }
+
+  .meal-cal {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark);
+  }
+
+  .meal-sep { font-size: 11px; color: var(--mid-gray); }
+
+  .chevron {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--parchment);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    color: var(--warm-gray);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    border: none; cursor: pointer;
+  }
+
+  .chevron.open { transform: rotate(180deg); }
+
+  .meal-body {
+    border-top: 1px solid var(--border);
+    padding: 0 16px 14px;
+  }
+
+  .recipe-block {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+    padding: 12px 0 10px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+
+  .food-hdr, .food-row {
+    display: grid;
+    grid-template-columns: 1fr 52px 44px 44px 44px;
+    gap: 4px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    font-size: 12.5px;
+  }
+
+  .food-row:last-child { border-bottom: none; }
+  .food-hdr { padding: 10px 0 6px; }
+
+  .hdr-c {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--mid-gray);
+    text-align: right;
+  }
+  .hdr-c:first-child { text-align: left; }
+
+  .food-name { color: var(--text); }
+  .food-qty { font-size: 11px; color: var(--mid-gray); }
+  .num { text-align: right; color: var(--warm-gray); font-size: 12px; }
+
+  @media (max-width: 560px) {
+    .macro-grid { grid-template-columns: repeat(2, 1fr); }
+    h1 { font-size: 1.5rem; }
+    .weekly-summary { flex-direction: column; gap: 12px; }
+    .weekly-note { margin-left: 0; }
+    .meal-macros { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-header">
+    <div class="page-badge">Weekly Meal Plan</div>
+    <h1>7-Day Nutrition Plan</h1>
+    <p class="page-sub">2,196 kcal · 151g protein · 232g carbs · 73g fat — daily targets</p>
+  </div>
+
+  <div class="weekly-summary" id="weeklySummary"></div>
+
+  <div class="macro-grid">
+    <div class="macro-card cal">
+      <div class="macro-lbl">Calories</div>
+      <div class="macro-val" id="mc-cal">—<span class="macro-unit"> kcal</span></div>
+      <div class="macro-target" id="mt-cal">target 2196</div>
+      <div class="prog-track"><div class="prog-fill" id="mp-cal" style="background:var(--blue)"></div></div>
+    </div>
+    <div class="macro-card protein">
+      <div class="macro-lbl">Protein</div>
+      <div class="macro-val" id="mc-p">—<span class="macro-unit"> g</span></div>
+      <div class="macro-target">target 151g</div>
+      <div class="prog-track"><div class="prog-fill" id="mp-p" style="background:var(--green)"></div></div>
+    </div>
+    <div class="macro-card carbs">
+      <div class="macro-lbl">Carbs</div>
+      <div class="macro-val" id="mc-c">—<span class="macro-unit"> g</span></div>
+      <div class="macro-target">target 232g</div>
+      <div class="prog-track"><div class="prog-fill" id="mp-c" style="background:var(--amber)"></div></div>
+    </div>
+    <div class="macro-card fat">
+      <div class="macro-lbl">Fat</div>
+      <div class="macro-val" id="mc-f">—<span class="macro-unit"> g</span></div>
+      <div class="macro-target">target 73g</div>
+      <div class="prog-track"><div class="prog-fill" id="mp-f" style="background:var(--rose)"></div></div>
+    </div>
+  </div>
+
+  <div class="day-tabs" id="dayTabs"></div>
+  <div class="meals-list" id="mealsList"></div>
+
+</div>
+
+<script>
+const TARGETS = { cal: 2196, p: 151, f: 73, c: 232 };
+
+const DAYS = [
+  {
+    label: 'Day 1',
+    meals: [
+      { name: 'Breakfast', dish: 'Bacon, egg & toast', recipe: 'Fry 2 eggs and 2 bacon rashers in a non-stick pan. Toast sourdough, top with eggs and bacon. Season with pepper.',
+        foods: [
+          { n: 'Free range eggs', q: '2 eggs (100g)', cal: 122, p: 10, c: 1, f: 9 },
+          { n: 'Lean bacon rashers', q: '2 rashers (50g)', cal: 122, p: 6, c: 2, f: 11 },
+          { n: 'Sourdough bread', q: '2 slices (80g)', cal: 196, p: 8, c: 38, f: 2 },
+        ]},
+      { name: 'Lunch', dish: 'Beef mince & potato bake', recipe: 'Brown beef mince with diced onion and garlic. Add beef stock and simmer 10 min. Layer in a baking dish with sliced potato, top with grated cheese, bake 200°C for 20 min until golden.',
+        foods: [
+          { n: 'Extra lean beef mince', q: '125g', cal: 224, p: 37, c: 3, f: 9 },
+          { n: 'Potato, sliced', q: '200g', cal: 154, p: 4, c: 34, f: 0 },
+          { n: 'Brown onion', q: '60g', cal: 29, p: 1, c: 7, f: 0 },
+          { n: 'Tasty grated cheese', q: '18g', cal: 73, p: 8, c: 0, f: 5 },
+          { n: 'Beef stock (low sodium)', q: '100ml', cal: 10, p: 1, c: 1, f: 0 },
+        ]},
+      { name: 'Snack', dish: 'Tuna & rice cakes', recipe: 'Drain tuna, spread over rice cakes with sliced cucumber.',
+        foods: [
+          { n: 'Tuna in springwater', q: '95g can', cal: 90, p: 20, c: 0, f: 1 },
+          { n: 'Rice cakes', q: '4 cakes (30g)', cal: 114, p: 2, c: 24, f: 1 },
+          { n: 'Cucumber', q: '80g', cal: 11, p: 0, c: 2, f: 0 },
+        ]},
+      { name: 'Dinner', dish: 'Pan-seared chicken & roasted veg', recipe: 'Season chicken breast with salt, pepper and dried thyme. Sear in a hot pan 5 min each side. Toss sweet potato, zucchini and broccolini in olive oil, roast 200°C for 20 min.',
+        foods: [
+          { n: 'Chicken breast', q: '150g', cal: 165, p: 35, c: 0, f: 3 },
+          { n: 'Sweet potato', q: '160g', cal: 137, p: 3, c: 32, f: 0 },
+          { n: 'Zucchini', q: '100g', cal: 17, p: 2, c: 3, f: 0 },
+          { n: 'Broccolini', q: '80g', cal: 27, p: 3, c: 4, f: 0 },
+          { n: 'Olive oil', q: '8ml', cal: 71, p: 0, c: 0, f: 8 },
+        ]},
+      { name: 'Dessert', dish: 'Dark choc & Greek yoghurt', recipe: 'Break chocolate into pieces and serve alongside a bowl of plain Greek yoghurt.',
+        foods: [
+          { n: 'Dark chocolate 70%', q: '22g', cal: 121, p: 2, c: 8, f: 9 },
+          { n: 'Plain Greek yoghurt', q: '150g', cal: 90, p: 15, c: 6, f: 1 },
+          { n: 'Honey', q: '8g', cal: 24, p: 0, c: 6, f: 0 },
+        ]},
+    ]
+  },
+  {
+    label: 'Day 2',
+    meals: [
+      { name: 'Breakfast', dish: 'Smashed avo & poached eggs on sourdough', recipe: 'Poach 2 eggs in simmering water for 3 min. Smash avocado with lemon juice, salt and chilli flakes. Pile onto toasted sourdough and top with eggs.',
+        foods: [
+          { n: 'Free range eggs', q: '2 eggs (100g)', cal: 122, p: 10, c: 1, f: 9 },
+          { n: 'Avocado', q: '70g', cal: 112, p: 1, c: 2, f: 11 },
+          { n: 'Sourdough bread', q: '2 slices (80g)', cal: 196, p: 8, c: 38, f: 2 },
+          { n: 'Lemon juice', q: '10ml', cal: 3, p: 0, c: 1, f: 0 },
+        ]},
+      { name: 'Lunch', dish: 'Chicken & white rice bowl with steamed greens', recipe: 'Season and pan-fry chicken breast until cooked through. Slice over steamed jasmine rice. Steam broccoli and peas alongside.',
+        foods: [
+          { n: 'Chicken breast', q: '140g', cal: 154, p: 33, c: 0, f: 3 },
+          { n: 'White rice', q: '90g dry', cal: 324, p: 6, c: 72, f: 1 },
+          { n: 'Broccoli florets', q: '100g', cal: 34, p: 3, c: 5, f: 0 },
+          { n: 'Frozen peas', q: '60g', cal: 43, p: 3, c: 7, f: 0 },
+        ]},
+      { name: 'Snack', dish: 'Cottage cheese & crackers', recipe: 'Spoon cottage cheese onto wholegrain crackers, top with sliced tomato.',
+        foods: [
+          { n: 'Cottage cheese', q: '120g', cal: 103, p: 14, c: 4, f: 4 },
+          { n: 'Wholegrain crackers', q: '25g', cal: 100, p: 3, c: 16, f: 3 },
+          { n: 'Tomato', q: '80g', cal: 14, p: 1, c: 3, f: 0 },
+        ]},
+      { name: 'Dinner', dish: 'Grilled lamb cutlets with mash & beans', recipe: 'Season cutlets with rosemary, salt and pepper. Grill 3 min each side. Mash potato with a little butter and milk until smooth. Steam green beans.',
+        foods: [
+          { n: 'Lean lamb cutlets', q: '140g', cal: 237, p: 30, c: 0, f: 13 },
+          { n: 'Potato, mashed', q: '200g raw', cal: 154, p: 4, c: 34, f: 0 },
+          { n: 'Butter', q: '6g', cal: 43, p: 0, c: 0, f: 5 },
+          { n: 'Full-cream milk (mash)', q: '40ml', cal: 25, p: 1, c: 2, f: 1 },
+          { n: 'Green beans', q: '100g', cal: 35, p: 2, c: 7, f: 0 },
+        ]},
+      { name: 'Dessert', dish: 'Banana & yoghurt bowl', recipe: 'Slice banana into Greek yoghurt, drizzle with honey.',
+        foods: [
+          { n: 'Banana', q: '1 medium (118g)', cal: 89, p: 1, c: 23, f: 0 },
+          { n: 'Plain Greek yoghurt', q: '150g', cal: 90, p: 15, c: 6, f: 1 },
+          { n: 'Honey', q: '6g', cal: 18, p: 0, c: 5, f: 0 },
+        ]},
+    ]
+  },
+  {
+    label: 'Day 3',
+    meals: [
+      { name: 'Breakfast', dish: 'Scrambled eggs, bacon & baked beans', recipe: 'Whisk eggs with a splash of milk, scramble low and slow. Grill bacon. Heat baked beans in a small pot. Serve all on one plate.',
+        foods: [
+          { n: 'Free range eggs', q: '3 eggs (150g)', cal: 183, p: 15, c: 1, f: 13 },
+          { n: 'Lean bacon rashers', q: '2 rashers (50g)', cal: 122, p: 6, c: 2, f: 11 },
+          { n: 'Baked beans (canned)', q: '150g', cal: 117, p: 7, c: 21, f: 1 },
+          { n: 'Sourdough bread', q: '1 slice (40g)', cal: 98, p: 4, c: 19, f: 1 },
+        ]},
+      { name: 'Lunch', dish: 'Lean beef burger bowl', recipe: 'Form beef mince into a patty, season well, cook in a pan 4 min each side. Slice over roasted potato with lettuce, tomato and cheddar.',
+        foods: [
+          { n: 'Extra lean beef mince (patty)', q: '130g', cal: 233, p: 38, c: 3, f: 9 },
+          { n: 'Roasted potato', q: '185g', cal: 152, p: 4, c: 33, f: 1 },
+          { n: 'Cos lettuce', q: '40g', cal: 7, p: 1, c: 1, f: 0 },
+          { n: 'Tomato, sliced', q: '80g', cal: 14, p: 1, c: 3, f: 0 },
+          { n: 'Cheddar cheese', q: '15g', cal: 61, p: 4, c: 0, f: 5 },
+        ]},
+      { name: 'Snack', dish: 'Greek yoghurt & rice cakes', recipe: 'Serve yoghurt in a bowl alongside rice cakes.',
+        foods: [
+          { n: 'Plain Greek yoghurt', q: '180g', cal: 108, p: 18, c: 7, f: 1 },
+          { n: 'Rice cakes', q: '4 cakes (30g)', cal: 114, p: 2, c: 24, f: 1 },
+        ]},
+      { name: 'Dinner', dish: 'Pork mince & veg stir-through pasta', recipe: 'Brown pork mince with garlic and diced tomato. Stir through cooked pasta with baby spinach and a little parmesan.',
+        foods: [
+          { n: '5% fat pork mince', q: '120g', cal: 166, p: 27, c: 2, f: 7 },
+          { n: 'Pasta (penne or spiral)', q: '80g dry', cal: 284, p: 10, c: 56, f: 2 },
+          { n: 'Crushed tomatoes (canned)', q: '100g', cal: 20, p: 1, c: 4, f: 0 },
+          { n: 'Baby spinach', q: '40g', cal: 9, p: 1, c: 1, f: 0 },
+          { n: 'Parmesan', q: '12g', cal: 49, p: 4, c: 0, f: 3 },
+        ]},
+      { name: 'Dessert', dish: 'Dark choc & almonds', recipe: 'Break chocolate into squares, serve with a small handful of almonds.',
+        foods: [
+          { n: 'Dark chocolate 70%', q: '22g', cal: 121, p: 2, c: 8, f: 9 },
+          { n: 'Almonds', q: '18g', cal: 104, p: 4, c: 2, f: 10 },
+        ]},
+    ]
+  },
+  {
+    label: 'Day 4',
+    meals: [
+      { name: 'Breakfast', dish: 'Egg white omelette with bacon & toast', recipe: 'Whisk egg whites, pour into a hot non-stick pan. Add diced bacon and mushrooms, fold omelette over filling. Serve with wholegrain toast.',
+        foods: [
+          { n: 'Egg whites', q: '180g (6 whites)', cal: 97, p: 21, c: 1, f: 0 },
+          { n: 'Lean bacon rashers', q: '2 rashers (50g)', cal: 122, p: 6, c: 2, f: 11 },
+          { n: 'Mushrooms, sliced', q: '80g', cal: 18, p: 2, c: 3, f: 0 },
+          { n: 'Wholegrain toast', q: '2 slices (80g)', cal: 184, p: 8, c: 34, f: 3 },
+        ]},
+      { name: 'Lunch', dish: 'Turkey mince & sweet potato bowl', recipe: 'Brown turkey mince with garlic, paprika and a splash of chicken stock. Roast diced sweet potato at 200°C for 20 min. Serve mince over sweet potato with steamed corn.',
+        foods: [
+          { n: 'Turkey breast mince', q: '130g', cal: 178, p: 36, c: 1, f: 3 },
+          { n: 'Sweet potato', q: '190g', cal: 163, p: 3, c: 38, f: 0 },
+          { n: 'Corn kernels', q: '80g', cal: 66, p: 2, c: 14, f: 1 },
+          { n: 'Brown onion', q: '60g', cal: 29, p: 1, c: 7, f: 0 },
+        ]},
+      { name: 'Snack', dish: 'Tuna & veggie sticks', recipe: 'Drain tuna, serve with sliced carrot, celery and cucumber sticks.',
+        foods: [
+          { n: 'Tuna in springwater', q: '95g can', cal: 90, p: 20, c: 0, f: 1 },
+          { n: 'Carrot sticks', q: '80g', cal: 33, p: 1, c: 8, f: 0 },
+          { n: 'Wholegrain crackers', q: '20g', cal: 80, p: 2, c: 13, f: 2 },
+          { n: 'Cucumber', q: '60g', cal: 8, p: 0, c: 2, f: 0 },
+        ]},
+      { name: 'Dinner', dish: 'Beef & veg tray bake', recipe: 'Toss diced lean beef, potato, carrot, onion and capsicum in olive oil, garlic and mixed herbs. Spread on a tray and roast at 200°C for 25 min, turning halfway.',
+        foods: [
+          { n: 'Diced lean beef', q: '130g', cal: 215, p: 30, c: 0, f: 10 },
+          { n: 'Potato, diced', q: '175g', cal: 135, p: 4, c: 30, f: 0 },
+          { n: 'Carrot', q: '80g', cal: 33, p: 1, c: 8, f: 0 },
+          { n: 'Red capsicum', q: '80g', cal: 26, p: 1, c: 5, f: 0 },
+          { n: 'Brown onion', q: '60g', cal: 29, p: 1, c: 7, f: 0 },
+          { n: 'Olive oil', q: '8ml', cal: 71, p: 0, c: 0, f: 8 },
+        ]},
+      { name: 'Dessert', dish: 'Yoghurt & honey with digestive biscuits', recipe: 'Drizzle honey into Greek yoghurt, serve alongside 2 digestive biscuits.',
+        foods: [
+          { n: 'Plain Greek yoghurt', q: '150g', cal: 90, p: 15, c: 6, f: 1 },
+          { n: 'Honey', q: '8g', cal: 24, p: 0, c: 6, f: 0 },
+          { n: 'Digestive biscuits', q: '2 biscuits (30g)', cal: 120, p: 2, c: 17, f: 5 },
+        ]},
+    ]
+  },
+  {
+    label: 'Day 5',
+    meals: [
+      { name: 'Breakfast', dish: 'Baked beans & egg on toast', recipe: 'Heat baked beans in a small saucepan. Fry 2 eggs in a non-stick pan until whites are set. Serve on thick-cut wholegrain toast.',
+        foods: [
+          { n: 'Baked beans (canned)', q: '200g', cal: 156, p: 9, c: 28, f: 1 },
+          { n: 'Free range eggs', q: '2 eggs (100g)', cal: 122, p: 10, c: 1, f: 9 },
+          { n: 'Wholegrain toast', q: '2 slices (80g)', cal: 184, p: 8, c: 34, f: 3 },
+        ]},
+      { name: 'Lunch', dish: 'Chicken & rice with roasted pumpkin', recipe: 'Roast diced pumpkin at 200°C for 20 min. Pan-fry chicken breast seasoned with garlic powder and paprika. Serve sliced chicken over steamed rice with pumpkin on the side.',
+        foods: [
+          { n: 'Chicken breast', q: '145g', cal: 160, p: 34, c: 0, f: 3 },
+          { n: 'White rice', q: '90g dry', cal: 324, p: 6, c: 72, f: 1 },
+          { n: 'Pumpkin, diced', q: '150g', cal: 39, p: 1, c: 9, f: 0 },
+          { n: 'Olive oil', q: '6ml', cal: 53, p: 0, c: 0, f: 6 },
+        ]},
+      { name: 'Snack', dish: 'Cheese & crackers with apple', recipe: 'Slice cheddar over wholegrain crackers. Serve with apple slices on the side.',
+        foods: [
+          { n: 'Cheddar cheese', q: '25g', cal: 102, p: 6, c: 0, f: 9 },
+          { n: 'Wholegrain crackers', q: '25g', cal: 100, p: 3, c: 16, f: 3 },
+          { n: 'Apple', q: '1 medium (150g)', cal: 78, p: 0, c: 20, f: 0 },
+        ]},
+      { name: 'Dinner', dish: "Lamb & vegetable shepherd's pie", recipe: 'Brown lamb mince with diced onion, carrot and peas in a pan. Add beef stock, simmer 10 min. Top with mashed potato, bake at 200°C for 15 min until golden on top.',
+        foods: [
+          { n: 'Lean lamb mince', q: '120g', cal: 228, p: 26, c: 0, f: 14 },
+          { n: 'Potato (mash topping)', q: '180g raw', cal: 139, p: 4, c: 30, f: 0 },
+          { n: 'Frozen peas & carrot', q: '80g', cal: 46, p: 3, c: 8, f: 0 },
+          { n: 'Brown onion', q: '60g', cal: 29, p: 1, c: 7, f: 0 },
+          { n: 'Beef stock (low sodium)', q: '100ml', cal: 10, p: 1, c: 1, f: 0 },
+          { n: 'Butter (mash)', q: '6g', cal: 43, p: 0, c: 0, f: 5 },
+        ]},
+      { name: 'Dessert', dish: 'Dark choc & Greek yoghurt', recipe: 'Break chocolate into squares. Serve alongside plain Greek yoghurt.',
+        foods: [
+          { n: 'Dark chocolate 70%', q: '20g', cal: 110, p: 2, c: 7, f: 8 },
+          { n: 'Plain Greek yoghurt', q: '130g', cal: 78, p: 13, c: 5, f: 1 },
+        ]},
+    ]
+  },
+  {
+    label: 'Day 6',
+    meals: [
+      { name: 'Breakfast', dish: 'Mushroom & bacon omelette with toast', recipe: 'Fry bacon and mushrooms. Whisk 3 eggs, pour into pan, cook until set, fold over filling. Serve with sourdough toast.',
+        foods: [
+          { n: 'Free range eggs', q: '3 eggs (150g)', cal: 183, p: 15, c: 1, f: 13 },
+          { n: 'Lean bacon rashers', q: '2 rashers (50g)', cal: 122, p: 6, c: 2, f: 11 },
+          { n: 'Mushrooms, sliced', q: '90g', cal: 20, p: 3, c: 3, f: 0 },
+          { n: 'Sourdough bread', q: '1 slice (40g)', cal: 98, p: 4, c: 19, f: 1 },
+        ]},
+      { name: 'Lunch', dish: 'Beef mince rice bowl with corn & peas', recipe: 'Brown beef mince with garlic and onion. Season with Worcestershire sauce and mixed herbs. Serve over steamed rice with corn and peas mixed through.',
+        foods: [
+          { n: 'Extra lean beef mince', q: '120g', cal: 215, p: 35, c: 3, f: 9 },
+          { n: 'White rice', q: '90g dry', cal: 324, p: 6, c: 72, f: 1 },
+          { n: 'Frozen corn & peas', q: '80g', cal: 58, p: 3, c: 11, f: 0 },
+          { n: 'Brown onion', q: '50g', cal: 24, p: 1, c: 6, f: 0 },
+        ]},
+      { name: 'Snack', dish: 'Cottage cheese & fruit', recipe: 'Spoon cottage cheese into a bowl, top with sliced strawberries or any seasonal fruit.',
+        foods: [
+          { n: 'Cottage cheese', q: '150g', cal: 129, p: 17, c: 5, f: 5 },
+          { n: 'Strawberries', q: '100g', cal: 32, p: 1, c: 7, f: 0 },
+          { n: 'Rice cakes', q: '3 cakes (22g)', cal: 84, p: 2, c: 18, f: 1 },
+        ]},
+      { name: 'Dinner', dish: 'Grilled chicken thigh with roasted potato & greens', recipe: 'Season skinless chicken thighs with garlic, lemon and mixed herbs. Grill or pan-sear 6 min each side. Roast potato cubes in a little olive oil at 200°C for 20 min. Steam broccolini.',
+        foods: [
+          { n: 'Chicken thigh (skinless)', q: '150g', cal: 249, p: 28, c: 0, f: 15 },
+          { n: 'Potato, cubed', q: '175g', cal: 135, p: 4, c: 30, f: 0 },
+          { n: 'Broccolini', q: '100g', cal: 34, p: 3, c: 5, f: 0 },
+          { n: 'Olive oil', q: '8ml', cal: 71, p: 0, c: 0, f: 8 },
+        ]},
+      { name: 'Dessert', dish: 'Banana & digestive biscuits with milk', recipe: 'Slice banana, serve with digestive biscuits and a cold glass of milk.',
+        foods: [
+          { n: 'Banana', q: '1 medium (118g)', cal: 89, p: 1, c: 23, f: 0 },
+          { n: 'Digestive biscuits', q: '2 biscuits (30g)', cal: 120, p: 2, c: 17, f: 5 },
+          { n: 'Full-cream milk', q: '150ml', cal: 93, p: 5, c: 7, f: 5 },
+        ]},
+    ]
+  },
+  {
+    label: 'Day 7',
+    meals: [
+      { name: 'Breakfast', dish: 'Big weekend brekkie', recipe: 'The full spread — fry eggs, grill bacon and tomato, heat baked beans. Toast sourdough and serve everything together on one big plate.',
+        foods: [
+          { n: 'Free range eggs', q: '2 eggs (100g)', cal: 122, p: 10, c: 1, f: 9 },
+          { n: 'Lean bacon rashers', q: '2 rashers (50g)', cal: 122, p: 6, c: 2, f: 11 },
+          { n: 'Baked beans (canned)', q: '120g', cal: 94, p: 6, c: 17, f: 1 },
+          { n: 'Tomato, halved & grilled', q: '80g', cal: 14, p: 1, c: 3, f: 0 },
+          { n: 'Sourdough bread', q: '1 slice (40g)', cal: 98, p: 4, c: 19, f: 1 },
+        ]},
+      { name: 'Lunch', dish: 'Chicken, pumpkin & pasta bake', recipe: 'Toss diced chicken breast and pumpkin with olive oil, garlic and Italian herbs. Roast 200°C for 20 min. Cook pasta, combine with chicken and pumpkin, stir through a little parmesan.',
+        foods: [
+          { n: 'Chicken breast', q: '140g', cal: 154, p: 33, c: 0, f: 3 },
+          { n: 'Pasta (penne)', q: '80g dry', cal: 284, p: 10, c: 56, f: 2 },
+          { n: 'Pumpkin, diced', q: '140g', cal: 36, p: 1, c: 8, f: 0 },
+          { n: 'Olive oil', q: '8ml', cal: 71, p: 0, c: 0, f: 8 },
+          { n: 'Parmesan', q: '12g', cal: 49, p: 4, c: 0, f: 3 },
+        ]},
+      { name: 'Snack', dish: 'Tuna & crackers with carrot sticks', recipe: 'Drain tuna, pile onto crackers, serve with carrot sticks on the side.',
+        foods: [
+          { n: 'Tuna in springwater', q: '95g can', cal: 90, p: 20, c: 0, f: 1 },
+          { n: 'Wholegrain crackers', q: '25g', cal: 100, p: 3, c: 16, f: 3 },
+          { n: 'Carrot sticks', q: '80g', cal: 33, p: 1, c: 8, f: 0 },
+        ]},
+      { name: 'Dinner', dish: 'Beef & mushroom with mashed potato & beans', recipe: 'Brown beef strips with sliced mushrooms and onion. Season with Worcestershire sauce and thyme, add a splash of beef stock. Simmer 10 min. Serve over creamy mash with steamed green beans.',
+        foods: [
+          { n: 'Lean beef strips', q: '130g', cal: 215, p: 30, c: 0, f: 10 },
+          { n: 'Mushrooms, sliced', q: '100g', cal: 23, p: 3, c: 4, f: 0 },
+          { n: 'Potato (mash)', q: '185g raw', cal: 143, p: 4, c: 31, f: 0 },
+          { n: 'Butter (mash)', q: '6g', cal: 43, p: 0, c: 0, f: 5 },
+          { n: 'Green beans', q: '100g', cal: 35, p: 2, c: 7, f: 0 },
+          { n: 'Beef stock (low sodium)', q: '80ml', cal: 8, p: 1, c: 1, f: 0 },
+        ]},
+      { name: 'Dessert', dish: 'Dark choc, almonds & yoghurt', recipe: 'Break chocolate into squares, serve with almonds and a bowl of Greek yoghurt to finish the week.',
+        foods: [
+          { n: 'Dark chocolate 70%', q: '20g', cal: 110, p: 2, c: 7, f: 8 },
+          { n: 'Almonds', q: '12g', cal: 70, p: 3, c: 1, f: 6 },
+          { n: 'Plain Greek yoghurt', q: '130g', cal: 78, p: 13, c: 5, f: 1 },
+        ]},
+    ]
+  },
+];
+
+const r = n => Math.round(n);
+let currentDay = 0;
+const openMeals = {};
+
+function calcDay(day) {
+  let t = {cal:0,p:0,c:0,f:0};
+  day.meals.forEach(m => m.foods.forEach(f => { t.cal+=f.cal; t.p+=f.p; t.c+=f.c; t.f+=f.f; }));
+  return t;
+}
+
+function pct(val, target) { return Math.min(100, r(val/target*100)); }
+
+function renderWeekly() {
+  const tots = DAYS.map(calcDay);
+  const wCal = tots.reduce((a,b)=>a+b.cal,0);
+  const wP   = tots.reduce((a,b)=>a+b.p,0);
+  const wC   = tots.reduce((a,b)=>a+b.c,0);
+  const wF   = tots.reduce((a,b)=>a+b.f,0);
+  const avgCal = r(wCal/7), avgP = r(wP/7), avgC = r(wC/7), avgF = r(wF/7);
+  const diff = TARGETS.cal - avgCal;
+  const noteText = diff > 0 ? `${Math.abs(diff)} kcal under daily target` : diff < 0 ? `${Math.abs(diff)} kcal over daily target` : 'Exactly on target';
+
+  document.getElementById('weeklySummary').innerHTML = `
+    <span class="weekly-label">Weekly avg</span>
+    <div class="weekly-stats">
+      <div class="w-stat"><span class="w-val">${avgCal}</span><span class="w-sub">kcal / day</span></div>
+      <div class="w-stat"><span class="w-val" style="color:var(--green)">${avgP}g</span><span class="w-sub">protein</span></div>
+      <div class="w-stat"><span class="w-val" style="color:var(--amber)">${avgC}g</span><span class="w-sub">carbs</span></div>
+      <div class="w-stat"><span class="w-val" style="color:var(--rose)">${avgF}g</span><span class="w-sub">fat</span></div>
+    </div>
+    <span class="weekly-note">${noteText}</span>`;
+}
+
+function renderMacroBar(tot) {
+  const items = [
+    {id:'cal', val:tot.cal, target:TARGETS.cal, unit:'kcal', color:'var(--blue)'},
+    {id:'p',   val:tot.p,   target:TARGETS.p,   unit:'g',    color:'var(--green)'},
+    {id:'c',   val:tot.c,   target:TARGETS.c,   unit:'g',    color:'var(--amber)'},
+    {id:'f',   val:tot.f,   target:TARGETS.f,   unit:'g',    color:'var(--rose)'},
+  ];
+  items.forEach(item => {
+    const over = item.val > item.target;
+    const el = document.getElementById('mc-'+item.id);
+    el.innerHTML = r(item.val) + `<span class="macro-unit"> ${item.unit}</span>`;
+    el.className = 'macro-val' + (over ? ' over' : '');
+    document.getElementById('mp-'+item.id).style.width = pct(item.val, item.target) + '%';
+    document.getElementById('mp-'+item.id).style.background = over ? 'var(--red)' : item.color;
+  });
+}
+
+function renderTabs() {
+  document.getElementById('dayTabs').innerHTML = DAYS.map((d, i) => {
+    const tot = calcDay(d);
+    const over = tot.cal > TARGETS.cal;
+    return `<button class="day-tab ${i===currentDay?'active':''} ${over?'over-cal':''}" onclick="switchDay(${i})">
+      ${d.label} <span class="tab-cal">${r(tot.cal)}</span>
+    </button>`;
+  }).join('');
+}
+
+function renderMeals() {
+  const day = DAYS[currentDay];
+  document.getElementById('mealsList').innerHTML = day.meals.map((m, mi) => {
+    const key = `${currentDay}-${mi}`;
+    const isOpen = openMeals[key] !== false;
+    let mTot = {cal:0,p:0,c:0,f:0};
+    m.foods.forEach(f => { mTot.cal+=f.cal; mTot.p+=f.p; mTot.c+=f.c; mTot.f+=f.f; });
+
+    return `<div class="meal-card">
+      <div class="meal-header" onclick="toggleMeal('${key}')">
+        <div class="meal-left">
+          <div class="meal-name">${m.name}</div>
+          <div class="meal-dish">${m.dish}</div>
+        </div>
+        <div class="meal-macros">
+          <span class="meal-cal">${r(mTot.cal)}</span>
+          <span class="meal-sep">·</span>
+          <span class="meal-macro-tag" style="color:var(--green)">${r(mTot.p)}g P</span>
+          <span class="meal-macro-tag" style="color:var(--amber)">${r(mTot.c)}g C</span>
+          <span class="meal-macro-tag" style="color:var(--rose)">${r(mTot.f)}g F</span>
+        </div>
+        <button class="chevron ${isOpen?'open':''}">▾</button>
+      </div>
+      ${isOpen ? `<div class="meal-body">
+        <div class="recipe-block">${m.recipe}</div>
+        <div class="food-hdr">
+          <span class="hdr-c">Ingredient</span>
+          <span class="hdr-c">kcal</span>
+          <span class="hdr-c">P</span>
+          <span class="hdr-c">C</span>
+          <span class="hdr-c">F</span>
+        </div>
+        ${m.foods.map(food => `<div class="food-row">
+          <span class="food-name">${food.n}<br><span class="food-qty">${food.q}</span></span>
+          <span class="num">${food.cal}</span>
+          <span class="num">${food.p}g</span>
+          <span class="num">${food.c}g</span>
+          <span class="num">${food.f}g</span>
+        </div>`).join('')}
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function switchDay(i) {
+  currentDay = i;
+  renderMacroBar(calcDay(DAYS[i]));
+  renderTabs();
+  renderMeals();
+}
+
+function toggleMeal(key) {
+  openMeals[key] = openMeals[key] === false ? true : false;
+  renderMeals();
+}
+
+renderWeekly();
+switchDay(0);
+</script>
+</body>
+</html>

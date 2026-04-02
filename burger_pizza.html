@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Burger & Pizza — Meal Prep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FAF8F4;
+    --parchment: #F2EDE4;
+    --warm-gray: #8C8179;
+    --mid-gray: #C5BFB8;
+    --dark: #1E1A17;
+    --text: #2E2925;
+    --muted: #6B6460;
+    --green: #3A7D5E;
+    --amber: #C07A2A;
+    --rose: #A8506A;
+    --blue: #2E6EA6;
+    --red: #B84040;
+    --border: rgba(0,0,0,0.07);
+    --border-strong: rgba(0,0,0,0.12);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  .page { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* Page header */
+  .page-header { margin-bottom: 1.75rem; padding-bottom: 1.5rem; border-bottom: 1.5px solid var(--border-strong); }
+
+  .page-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--rose); margin-bottom: 10px;
+  }
+  .page-badge::before { content: ''; width: 20px; height: 1.5px; background: var(--rose); display: block; }
+
+  h1 { font-family: 'Lora', serif; font-size: 1.9rem; font-weight: 600; color: var(--dark); margin-bottom: 6px; line-height: 1.2; }
+  .page-sub { font-size: 13.5px; color: var(--muted); }
+
+  /* Recipe switcher tabs */
+  .recipe-switcher {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1.75rem;
+    background: white;
+    border: 1px solid var(--border-strong);
+    border-radius: 50px;
+    padding: 4px;
+    width: fit-content;
+  }
+
+  .recipe-tab {
+    padding: 8px 22px;
+    border-radius: 50px;
+    border: none;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.18s;
+  }
+
+  .recipe-tab.active {
+    background: var(--dark);
+    color: white;
+  }
+
+  /* Recipe block */
+  .recipe-block { display: none; }
+  .recipe-block.active { display: block; }
+
+  .recipe-name {
+    font-family: 'Lora', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 6px;
+    line-height: 1.25;
+  }
+
+  .tagline { font-size: 13.5px; color: var(--muted); line-height: 1.6; margin-bottom: 1.5rem; }
+
+  /* Servings */
+  .serves-bar {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 1.5rem;
+    background: var(--parchment);
+    border-radius: var(--radius); padding: 12px 16px;
+    border: 1px solid var(--border);
+  }
+
+  .serves-label { font-size: 13px; font-weight: 500; color: var(--muted); flex: 1; }
+  .serves-note { font-size: 12px; color: var(--mid-gray); font-style: italic; }
+  .stepper { display: flex; align-items: center; gap: 10px; }
+
+  .step-btn {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1.5px solid var(--border-strong); background: white;
+    color: var(--text); font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; font-weight: 300;
+  }
+  .step-btn:hover { background: var(--dark); color: white; border-color: var(--dark); }
+  .step-num { font-size: 22px; font-weight: 600; min-width: 28px; text-align: center; color: var(--dark); }
+
+  /* Macros */
+  .macro-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+
+  .macro-card {
+    background: white; border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 13px 12px; position: relative; overflow: hidden;
+  }
+  .macro-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 3px; border-radius: 0 0 var(--radius) var(--radius);
+  }
+  .macro-card.cal::after    { background: var(--blue); }
+  .macro-card.protein::after{ background: var(--green); }
+  .macro-card.carbs::after  { background: var(--amber); }
+  .macro-card.fat::after    { background: var(--rose); }
+
+  .macro-lbl { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--warm-gray); margin-bottom: 3px; }
+  .macro-val { font-size: 20px; font-weight: 600; color: var(--dark); line-height: 1; }
+  .macro-unit { font-size: 11px; font-weight: 400; color: var(--warm-gray); }
+  .macro-sub { font-size: 10px; color: var(--mid-gray); margin-top: 3px; }
+  .prog-track { height: 3px; background: var(--parchment); border-radius: 2px; margin-top: 8px; }
+  .prog-fill { height: 3px; border-radius: 2px; transition: width 0.4s ease; }
+
+  /* Sections */
+  .section { background: white; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+
+  .sec-header {
+    padding: 16px 18px; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    user-select: none; transition: background 0.1s;
+  }
+  .sec-header:hover { background: var(--cream); }
+  .sec-title { font-size: 15px; font-weight: 600; color: var(--dark); letter-spacing: -0.01em; }
+
+  .chevron {
+    width: 20px; height: 20px; border-radius: 50%; background: var(--parchment);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: var(--warm-gray); transition: transform 0.2s;
+    border: none; cursor: pointer;
+  }
+  .chevron.open { transform: rotate(180deg); }
+  .sec-body { border-top: 1px solid var(--border); }
+
+  /* Ingredient table */
+  .ing-table { width: 100%; padding: 0 18px; }
+  .ing-hdr, .ing-row {
+    display: grid;
+    grid-template-columns: 1fr 88px 52px 46px 46px 46px;
+    gap: 6px; align-items: center;
+    padding: 9px 0; border-bottom: 1px solid var(--border);
+  }
+  .ing-row:last-child { border-bottom: none; }
+  .ing-hdr { padding: 12px 0 8px; }
+  .hdr-cell { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--mid-gray); text-align: right; }
+  .hdr-cell:first-child { text-align: left; }
+  .ing-name { font-size: 13.5px; color: var(--text); }
+  .ing-qty { font-size: 12px; color: var(--mid-gray); text-align: right; }
+  .ing-num { font-size: 12px; color: var(--warm-gray); text-align: right; }
+
+  .comp-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mid-gray); padding: 12px 18px 2px; display: block; }
+  .comp-divider { height: 1px; background: var(--parchment); margin: 6px 18px; }
+
+  .total-row {
+    display: grid; grid-template-columns: 1fr 88px 52px 46px 46px 46px;
+    gap: 6px; align-items: center; padding: 12px 18px;
+    background: var(--parchment); border-top: 1.5px solid var(--border-strong);
+    font-size: 13px; font-weight: 600;
+  }
+  .total-label { color: var(--muted); font-size: 12px; font-weight: 500; }
+  .total-num { text-align: right; }
+
+  .pack-tip {
+    margin: 0 18px 16px; background: var(--parchment); border-radius: var(--radius-sm);
+    padding: 12px 14px; font-size: 12.5px; color: var(--muted); line-height: 1.6;
+    border-left: 3px solid var(--amber);
+  }
+
+  /* Steps */
+  .steps-list { padding: 6px 18px; }
+  .step { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .step:last-child { border-bottom: none; }
+  .step-circle {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--parchment); border: 1.5px solid var(--border-strong);
+    color: var(--muted); font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .step-text { font-size: 14px; color: var(--text); line-height: 1.7; }
+  .step-tag {
+    display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 0.05em;
+    text-transform: uppercase; background: var(--parchment); border: 1px solid var(--border-strong);
+    color: var(--muted); padding: 2px 7px; border-radius: 4px; margin-right: 6px; vertical-align: middle;
+  }
+
+  /* Tips */
+  .tips-list { padding: 6px 18px; }
+  .tip { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; color: var(--muted); line-height: 1.6; align-items: flex-start; }
+  .tip:last-child { border-bottom: none; }
+  .tip-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  @media (max-width: 540px) {
+    .macro-grid { grid-template-columns: repeat(2, 1fr); }
+    h1 { font-size: 1.5rem; }
+    .recipe-name { font-size: 1.25rem; }
+    .ing-hdr, .ing-row, .total-row { grid-template-columns: 1fr 70px 46px 40px 40px 40px; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-header">
+    <div class="page-badge">Batch Cook Recipes</div>
+    <h1>Burger &amp; Pizza</h1>
+    <p class="page-sub">Two weekend favourites — prepped Sunday, eaten all week.</p>
+  </div>
+
+  <div class="recipe-switcher">
+    <button class="recipe-tab active" onclick="switchRecipe('burger')">🍔 Beef Burger</button>
+    <button class="recipe-tab" onclick="switchRecipe('pizza')">🍕 Homemade Pizza</button>
+  </div>
+
+  <!-- BURGER -->
+  <div class="recipe-block active" id="block-burger">
+    <div class="recipe-name">Lean Beef Burger with Potato Wedges &amp; Slaw</div>
+    <p class="tagline">Batch cook patties Sunday — reheat in a pan or microwave. Wedges re-crisp in the oven. Slaw stays fresh all week.</p>
+
+    <div class="serves-bar">
+      <span class="serves-label">Servings</span>
+      <div class="stepper">
+        <button class="step-btn" onclick="changeServes('burger',-1)">−</button>
+        <span class="step-num" id="servesNum-burger">4</span>
+        <button class="step-btn" onclick="changeServes('burger',1)">+</button>
+      </div>
+      <span class="serves-note" id="servesNote-burger">~4 days of meals</span>
+    </div>
+
+    <div class="macro-grid" id="macroGrid-burger">
+      <div class="macro-card cal"><div class="macro-lbl">Calories</div><div class="macro-val" id="mc-burger-cal">—<span class="macro-unit"> kcal</span></div><div class="macro-sub">500–700 kcal target</div><div class="prog-track"><div class="prog-fill" id="mp-burger-cal" style="background:var(--blue)"></div></div></div>
+      <div class="macro-card protein"><div class="macro-lbl">Protein</div><div class="macro-val" id="mc-burger-p">—<span class="macro-unit"> g</span></div><div class="macro-sub">~35–50g per meal</div><div class="prog-track"><div class="prog-fill" id="mp-burger-p" style="background:var(--green)"></div></div></div>
+      <div class="macro-card carbs"><div class="macro-lbl">Carbs</div><div class="macro-val" id="mc-burger-c">—<span class="macro-unit"> g</span></div><div class="macro-sub">~60–80g per meal</div><div class="prog-track"><div class="prog-fill" id="mp-burger-c" style="background:var(--amber)"></div></div></div>
+      <div class="macro-card fat"><div class="macro-lbl">Fat</div><div class="macro-val" id="mc-burger-f">—<span class="macro-unit"> g</span></div><div class="macro-sub">~15–25g per meal</div><div class="prog-track"><div class="prog-fill" id="mp-burger-f" style="background:var(--rose)"></div></div></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header" onclick="toggle('burger-ing')"><span class="sec-title">Ingredients</span><button class="chevron open" id="chev-burger-ing">▾</button></div>
+      <div class="sec-body" id="body-burger-ing">
+        <div class="ing-table" style="padding-bottom:4px">
+          <div class="ing-hdr">
+            <span class="hdr-cell">Ingredient</span><span class="hdr-cell">Total Qty</span>
+            <span class="hdr-cell">kcal</span><span class="hdr-cell">P</span><span class="hdr-cell">C</span><span class="hdr-cell">F</span>
+          </div>
+          <div id="ingList-burger"></div>
+        </div>
+        <div class="total-row" id="ingTotal-burger"></div>
+        <div class="pack-tip">Pack patties, wedges and slaw separately. Reheat patties in a pan 2 min each side, wedges in oven at 200°C for 8 min. Slaw is served cold — don't heat it.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header" onclick="toggle('burger-steps')"><span class="sec-title">Method</span><button class="chevron open" id="chev-burger-steps">▾</button></div>
+      <div class="sec-body" id="body-burger-steps">
+        <div class="steps-list">
+          <div class="step"><div class="step-circle">1</div><div class="step-text"><span class="step-tag">Patties</span>Combine beef mince with Worcestershire sauce, garlic powder, onion powder, salt and pepper. Mix well with your hands. Divide into equal portions and shape into patties about 2cm thick. Press a small indent in the centre of each — this stops them puffing up while cooking.</div></div>
+          <div class="step"><div class="step-circle">2</div><div class="step-text"><span class="step-tag">Wedges</span>Preheat oven to 210°C. Cut potatoes into wedges, toss in olive oil, paprika, garlic powder, salt and pepper. Spread on a lined tray skin side down. Roast 30–35 min turning once, until golden and crispy on the outside.</div></div>
+          <div class="step"><div class="step-circle">3</div><div class="step-text"><span class="step-tag">Slaw</span>Finely shred cabbage and grate carrot. Mix with a light dressing of Greek yoghurt, a squeeze of lemon, salt and pepper. Refrigerate — slaw keeps 4 days and actually improves after a day in the fridge.</div></div>
+          <div class="step"><div class="step-circle">4</div><div class="step-text"><span class="step-tag">Grill</span>Heat a grill pan or heavy skillet over high heat. Cook patties 4 min each side — don't press them down. In the last minute, lay a slice of cheddar on top and cover with a lid briefly to melt.</div></div>
+          <div class="step"><div class="step-circle">5</div><div class="step-text"><span class="step-tag">Pack</span>Cool everything fully before packing. Portion patties, wedges and slaw into separate airtight containers. Serve with a toasted burger bun when eating — toast it fresh each day for best texture.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header" onclick="toggle('burger-tips')"><span class="sec-title">Meal Prep Tips</span><button class="chevron open" id="chev-burger-tips">▾</button></div>
+      <div class="sec-body" id="body-burger-tips">
+        <div class="tips-list">
+          <div class="tip"><span class="tip-icon">❄️</span><span>Patties keep 4 days in the fridge or freeze well for 3 months. Wedges are best within 3 days. Slaw lasts 4 days.</span></div>
+          <div class="tip"><span class="tip-icon">⚖️</span><span>Weigh total cooked patties and divide evenly — raw weight changes after cooking. Same applies to wedges.</span></div>
+          <div class="tip"><span class="tip-icon">💡</span><span>The bun is added fresh each serving — keeping it separate means it doesn't go soggy and you can skip it on lower carb days.</span></div>
+          <div class="tip"><span class="tip-icon">🔄</span><span>Swap beef for turkey or lean pork mince for variety. Add a fried egg on top when serving for extra protein if your macros allow it.</span></div>
+          <div class="tip"><span class="tip-icon">📊</span><span>Each serving with bun lands around 620 kcal. Without the bun it drops to ~450 kcal — useful if you want a lighter version some days.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIZZA -->
+  <div class="recipe-block" id="block-pizza">
+    <div class="recipe-name">High-Protein Homemade Pizza</div>
+    <p class="tagline">Greek yoghurt dough — no yeast, no proving. Make the bases Sunday, top and bake fresh or reheat from the fridge. 25 minutes total.</p>
+
+    <div class="serves-bar">
+      <span class="serves-label">Servings</span>
+      <div class="stepper">
+        <button class="step-btn" onclick="changeServes('pizza',-1)">−</button>
+        <span class="step-num" id="servesNum-pizza">4</span>
+        <button class="step-btn" onclick="changeServes('pizza',1)">+</button>
+      </div>
+      <span class="serves-note" id="servesNote-pizza">~4 days of meals</span>
+    </div>
+
+    <div class="macro-grid" id="macroGrid-pizza">
+      <div class="macro-card cal"><div class="macro-lbl">Calories</div><div class="macro-val" id="mc-pizza-cal">—<span class="macro-unit"> kcal</span></div><div class="macro-sub">500–700 kcal target</div><div class="prog-track"><div class="prog-fill" id="mp-pizza-cal" style="background:var(--blue)"></div></div></div>
+      <div class="macro-card protein"><div class="macro-lbl">Protein</div><div class="macro-val" id="mc-pizza-p">—<span class="macro-unit"> g</span></div><div class="macro-sub">~35–50g per meal</div><div class="prog-track"><div class="prog-fill" id="mp-pizza-p" style="background:var(--green)"></div></div></div>
+      <div class="macro-card carbs"><div class="macro-lbl">Carbs</div><div class="macro-val" id="mc-pizza-c">—<span class="macro-unit"> g</span></div><div class="macro-sub">~60–80g per meal</div><div class="prog-track"><div class="prog-fill" id="mp-pizza-c" style="background:var(--amber)"></div></div></div>
+      <div class="macro-card fat"><div class="macro-lbl">Fat</div><div class="macro-val" id="mc-pizza-f">—<span class="macro-unit"> g</span></div><div class="macro-sub">~15–25g per meal</div><div class="prog-track"><div class="prog-fill" id="mp-pizza-f" style="background:var(--rose)"></div></div></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header" onclick="toggle('pizza-ing')"><span class="sec-title">Ingredients</span><button class="chevron open" id="chev-pizza-ing">▾</button></div>
+      <div class="sec-body" id="body-pizza-ing">
+        <div class="ing-table" style="padding-bottom:4px">
+          <div class="ing-hdr">
+            <span class="hdr-cell">Ingredient</span><span class="hdr-cell">Total Qty</span>
+            <span class="hdr-cell">kcal</span><span class="hdr-cell">P</span><span class="hdr-cell">C</span><span class="hdr-cell">F</span>
+          </div>
+          <div id="ingList-pizza"></div>
+        </div>
+        <div class="total-row" id="ingTotal-pizza"></div>
+        <div class="pack-tip">Prep all bases in one session. Store untopped bases wrapped in the fridge up to 3 days, or store topped and baked pizzas as slices. Reheat in oven at 180°C for 8 min or in a pan on the stovetop for a crispier base.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header" onclick="toggle('pizza-steps')"><span class="sec-title">Method</span><button class="chevron open" id="chev-pizza-steps">▾</button></div>
+      <div class="sec-body" id="body-pizza-steps">
+        <div class="steps-list">
+          <div class="step"><div class="step-circle">1</div><div class="step-text"><span class="step-tag">Dough</span>Mix self-raising flour and Greek yoghurt together in a bowl until a soft dough forms. If it's sticky, add flour 1 tbsp at a time. Knead gently on a floured surface for 2 minutes until smooth. Divide into equal portions — one per serving.</div></div>
+          <div class="step"><div class="step-circle">2</div><div class="step-text"><span class="step-tag">Base</span>Roll each portion out on a floured surface into a thin round about 25–28cm. The thinner the better — this dough puffs up in the oven. Place on a lined baking tray.</div></div>
+          <div class="step"><div class="step-circle">3</div><div class="step-text"><span class="step-tag">Sauce</span>Spread a thin layer of crushed tomatoes over each base, leaving a 1cm border. Season with dried oregano, garlic powder and a pinch of salt.</div></div>
+          <div class="step"><div class="step-circle">4</div><div class="step-text"><span class="step-tag">Toppings</span>Scatter sliced lean chicken (pre-cooked and sliced) and mushrooms evenly over each base. Top with grated mozzarella. Don't overload — less is more for a crispy result.</div></div>
+          <div class="step"><div class="step-circle">5</div><div class="step-text"><span class="step-tag">Bake</span>Bake at 220°C for 12–15 min until the base is golden underneath and the cheese is bubbling and lightly browned. Rest 2 minutes before slicing into 4 pieces per pizza.</div></div>
+          <div class="step"><div class="step-circle">6</div><div class="step-text"><span class="step-tag">Pack</span>Cool fully, then stack slices with baking paper between them to stop sticking. Store in airtight containers. Reheat in the oven or a dry pan — microwave works but makes the base soft.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-header" onclick="toggle('pizza-tips')"><span class="sec-title">Meal Prep Tips</span><button class="chevron open" id="chev-pizza-tips">▾</button></div>
+      <div class="sec-body" id="body-pizza-tips">
+        <div class="tips-list">
+          <div class="tip"><span class="tip-icon">❄️</span><span>Baked pizza keeps 4 days in the fridge. Unbaked dough balls keep 2 days wrapped tightly. Slices freeze well for up to 2 months — reheat straight from frozen in the oven.</span></div>
+          <div class="tip"><span class="tip-icon">⚖️</span><span>Each pizza is one serving. Weigh total toppings and divide evenly across bases for consistent macros.</span></div>
+          <div class="tip"><span class="tip-icon">💡</span><span>Reheat in a dry non-stick pan over medium heat for 3–4 min — the base crisps back up perfectly and tastes almost fresh-baked.</span></div>
+          <div class="tip"><span class="tip-icon">🔄</span><span>Swap chicken for lean beef mince (pre-cooked and seasoned) or bacon rashers for variety. Keep the dough and base the same.</span></div>
+          <div class="tip"><span class="tip-icon">📊</span><span>Each pizza lands around 600 kcal with a solid protein hit from the yoghurt dough, chicken and mozzarella combined. Pair with a small side salad to add volume.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const state = { burger: { serves: 4 }, pizza: { serves: 4 } };
+const secOpen = {};
+const r = n => Math.round(n);
+const fmtQ = (qty, unit) => {
+  if (unit === 'buns') return `${Math.round(qty)} buns`;
+  const x = Math.round(qty*10)/10;
+  return (x%1===0?Math.round(x):x)+unit;
+};
+
+const RECIPES = {
+  burger: {
+    components: [
+      { label: 'Patties', items: [
+        { name: 'Extra lean beef mince',   qty: 500, unit: 'g',  cal: 895, p: 146, c: 9,  f: 35 },
+        { name: 'Worcestershire sauce',    qty: 16,  unit: 'ml', cal: 14,  p: 0,   c: 3,  f: 0  },
+        { name: 'Garlic powder',           qty: 4,   unit: 'g',  cal: 14,  p: 1,   c: 3,  f: 0  },
+        { name: 'Cheddar cheese (sliced)', qty: 60,  unit: 'g',  cal: 244, p: 15,  c: 0,  f: 20 },
+      ]},
+      { label: 'Potato Wedges', items: [
+        { name: 'Potato, cut into wedges', qty: 600, unit: 'g',  cal: 462, p: 12, c: 102, f: 1  },
+        { name: 'Olive oil',               qty: 12,  unit: 'ml', cal: 106, p: 0,  c: 0,   f: 12 },
+        { name: 'Smoked paprika',          qty: 4,   unit: 'g',  cal: 13,  p: 1,  c: 2,   f: 1  },
+      ]},
+      { label: 'Yoghurt Slaw', items: [
+        { name: 'Cabbage, shredded',   qty: 200, unit: 'g', cal: 50, p: 3, c: 11, f: 0 },
+        { name: 'Carrot, grated',      qty: 80,  unit: 'g', cal: 33, p: 1, c: 8,  f: 0 },
+        { name: 'Plain Greek yoghurt', qty: 80,  unit: 'g', cal: 48, p: 8, c: 3,  f: 1 },
+      ]},
+      { label: 'Serve Fresh', items: [
+        { name: 'Wholegrain burger bun', qty: 4, unit: 'buns', cal: 560, p: 20, c: 100, f: 8 },
+      ]},
+    ]
+  },
+  pizza: {
+    components: [
+      { label: 'Yoghurt Dough Base', items: [
+        { name: 'Self-raising flour',  qty: 320, unit: 'g', cal: 1075, p: 30, c: 224, f: 4 },
+        { name: 'Plain Greek yoghurt', qty: 320, unit: 'g', cal: 192,  p: 32, c: 13,  f: 4 },
+      ]},
+      { label: 'Sauce', items: [
+        { name: 'Crushed tomatoes (canned)', qty: 200, unit: 'g', cal: 40, p: 2, c: 8, f: 0 },
+        { name: 'Dried oregano',             qty: 4,   unit: 'g', cal: 11, p: 0, c: 2, f: 0 },
+      ]},
+      { label: 'Toppings', items: [
+        { name: 'Chicken breast (pre-cooked)', qty: 360, unit: 'g', cal: 396, p: 86, c: 0, f: 8  },
+        { name: 'Mushrooms, sliced',           qty: 160, unit: 'g', cal: 37,  p: 4,  c: 6, f: 0  },
+        { name: 'Mozzarella, grated',          qty: 160, unit: 'g', cal: 426, p: 36, c: 4, f: 30 },
+      ]},
+    ]
+  },
+};
+
+function calcPerServe(recipe) {
+  const s = state[recipe].serves;
+  let t = {cal:0,p:0,c:0,f:0};
+  RECIPES[recipe].components.flatMap(c => c.items).forEach(i => { t.cal+=i.cal; t.p+=i.p; t.c+=i.c; t.f+=i.f; });
+  return { cal:t.cal/s, p:t.p/s, c:t.c/s, f:t.f/s };
+}
+
+function renderMacros(recipe) {
+  const t = calcPerServe(recipe);
+  document.getElementById('mc-'+recipe+'-cal').innerHTML = r(t.cal) + '<span class="macro-unit"> kcal</span>';
+  document.getElementById('mc-'+recipe+'-p').innerHTML   = r(t.p)   + '<span class="macro-unit"> g</span>';
+  document.getElementById('mc-'+recipe+'-c').innerHTML   = r(t.c)   + '<span class="macro-unit"> g</span>';
+  document.getElementById('mc-'+recipe+'-f').innerHTML   = r(t.f)   + '<span class="macro-unit"> g</span>';
+  document.getElementById('mp-'+recipe+'-cal').style.width = Math.min(100, r(t.cal/650*100)) + '%';
+  document.getElementById('mp-'+recipe+'-p').style.width   = Math.min(100, r(t.p/50*100))   + '%';
+  document.getElementById('mp-'+recipe+'-c').style.width   = Math.min(100, r(t.c/80*100))   + '%';
+  document.getElementById('mp-'+recipe+'-f').style.width   = Math.min(100, r(t.f/25*100))   + '%';
+}
+
+function renderIngredients(recipe) {
+  const s = state[recipe].serves;
+  let tot = {cal:0,p:0,c:0,f:0};
+  let html = '';
+  RECIPES[recipe].components.forEach((comp, ci) => {
+    html += `<span class="comp-label">${comp.label}</span>`;
+    comp.items.forEach(ing => {
+      const cal=ing.cal/s, p=ing.p/s, c=ing.c/s, f=ing.f/s;
+      tot.cal+=cal; tot.p+=p; tot.c+=c; tot.f+=f;
+      html += `<div class="ing-row" style="padding-left:18px;padding-right:18px">
+        <span class="ing-name">${ing.name}</span>
+        <span class="ing-qty">${fmtQ(ing.qty, ing.unit)}</span>
+        <span class="ing-num">${r(cal)}</span>
+        <span class="ing-num">${r(p)}g</span>
+        <span class="ing-num">${r(c)}g</span>
+        <span class="ing-num">${r(f)}g</span>
+      </div>`;
+    });
+    if (ci < RECIPES[recipe].components.length - 1) html += `<div class="comp-divider"></div>`;
+  });
+  document.getElementById('ingList-'+recipe).innerHTML = `<div style="padding:0 0">${html}</div>`;
+  document.getElementById('ingTotal-'+recipe).innerHTML = `
+    <span class="total-label">Per serving ÷ ${s}</span>
+    <span></span>
+    <span class="total-num">${r(tot.cal)}</span>
+    <span class="total-num" style="color:var(--green)">${r(tot.p)}g</span>
+    <span class="total-num" style="color:var(--amber)">${r(tot.c)}g</span>
+    <span class="total-num" style="color:var(--rose)">${r(tot.f)}g</span>`;
+}
+
+function renderNote(recipe) {
+  const s = state[recipe].serves;
+  const map = {3:'~3 days of meals', 4:'~4 days of meals', 5:'~5 days of meals'};
+  document.getElementById('servesNum-'+recipe).textContent = s;
+  document.getElementById('servesNote-'+recipe).textContent = map[s] || `${s} servings`;
+}
+
+function changeServes(recipe, d) {
+  state[recipe].serves = Math.max(3, Math.min(5, state[recipe].serves + d));
+  renderNote(recipe); renderMacros(recipe); renderIngredients(recipe);
+}
+
+function toggle(key) {
+  secOpen[key] = secOpen[key] === false ? true : false;
+  const body = document.getElementById('body-'+key);
+  const chev = document.getElementById('chev-'+key);
+  if (body) body.style.display = secOpen[key] === false ? 'none' : '';
+  if (chev) chev.classList.toggle('open', secOpen[key] !== false);
+}
+
+function switchRecipe(recipe) {
+  document.querySelectorAll('.recipe-tab').forEach((t,i) => t.classList.toggle('active', ['burger','pizza'][i] === recipe));
+  document.querySelectorAll('.recipe-block').forEach((b,i) => b.classList.toggle('active', ['burger','pizza'][i] === recipe));
+}
+
+['burger','pizza'].forEach(r => { renderNote(r); renderMacros(r); renderIngredients(r); });
+</script>
+</body>
+</html>
